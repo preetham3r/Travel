@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#e94560">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<title>Raleigh Family Trip</title>
+<style>
+:root {
+  --bg: #1a1a2e;
+  --card: #16213e;
+  --accent: #e94560;
+  --accent-soft: #e9456022;
+  --text: #eee;
+  --muted: #8892b0;
+  --radius: 16px;
+  --max-w: 480px;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0 20px env(safe-area-inset-bottom);
+}
+.container {
+  width: 100%;
+  max-width: var(--max-w);
+  padding: 48px 0 32px;
+  text-align: center;
+}
+h1 {
+  font-size: 1.8rem;
+  font-weight: 700;
+  margin-bottom: 4px;
+  letter-spacing: -0.02em;
+}
+.dates {
+  font-size: 0.95rem;
+  color: var(--muted);
+  margin-bottom: 28px;
+}
+.countdown {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+.countdown .unit {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.countdown .num {
+  font-size: 2.4rem;
+  font-weight: 700;
+  color: var(--accent);
+  font-variant-numeric: tabular-nums;
+  line-height: 1.1;
+}
+.countdown .label {
+  font-size: 0.7rem;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+.countdown .sep {
+  font-size: 2rem;
+  color: var(--muted);
+  line-height: 1.2;
+  align-self: flex-start;
+}
+.tagline {
+  font-size: 0.85rem;
+  color: var(--muted);
+  margin-bottom: 36px;
+}
+.card-link {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: var(--card);
+  border: 1px solid #ffffff0d;
+  border-radius: var(--radius);
+  padding: 18px 20px;
+  margin-bottom: 12px;
+  text-decoration: none;
+  color: var(--text);
+  transition: transform 0.15s, border-color 0.15s;
+}
+.card-link:active { transform: scale(0.98); }
+.card-link:hover { border-color: var(--accent); }
+.card-icon {
+  font-size: 1.6rem;
+  flex-shrink: 0;
+  width: 40px;
+  text-align: center;
+}
+.card-body { text-align: left; }
+.card-title {
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 2px;
+}
+.card-sub {
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+.share-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: none;
+  border: 1px solid var(--muted);
+  color: var(--muted);
+  border-radius: 999px;
+  padding: 8px 16px;
+  font-size: 0.8rem;
+  cursor: pointer;
+  margin-top: 24px;
+  transition: border-color 0.2s, color 0.2s;
+}
+.share-btn:hover { border-color: var(--text); color: var(--text); }
+.install-note {
+  font-size: 0.75rem;
+  color: var(--muted);
+  margin-top: 28px;
+  line-height: 1.5;
+  padding: 14px;
+  background: var(--accent-soft);
+  border-radius: var(--radius);
+}
+.quick-ref {
+  margin-top: 32px;
+  text-align: left;
+}
+.quick-ref h2 {
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+.ref-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 0;
+  border-bottom: 1px solid #ffffff0d;
+  font-size: 0.85rem;
+}
+.ref-item .ref-label { color: var(--muted); }
+.ref-item .ref-value { font-weight: 500; }
+.ref-item a { color: var(--accent); text-decoration: none; }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <h1>Raleigh, NC</h1>
+  <p class="dates">March 20 &ndash; 22, 2026</p>
+
+  <div class="countdown" id="countdown">
+    <div class="unit"><span class="num" id="cd-d">--</span><span class="label">Days</span></div>
+    <span class="sep">:</span>
+    <div class="unit"><span class="num" id="cd-h">--</span><span class="label">Hours</span></div>
+    <span class="sep">:</span>
+    <div class="unit"><span class="num" id="cd-m">--</span><span class="label">Mins</span></div>
+  </div>
+  <p class="tagline" id="tagline">Road trip from Brambleton, VA</p>
+
+  <a class="card-link" href="full.html">
+    <span class="card-icon">🗓️</span>
+    <div class="card-body">
+      <div class="card-title">Full Itinerary</div>
+      <div class="card-sub">Day by day plan, restaurants, activities, and tips</div>
+    </div>
+  </a>
+
+  <button class="share-btn" onclick="shareApp()">📤 Share this guide</button>
+
+  <div class="quick-ref">
+    <h2>Quick Reference</h2>
+    <div class="ref-item">
+      <span class="ref-label">Drive</span>
+      <span class="ref-value">~4.5 hrs via I-85 S</span>
+    </div>
+    <div class="ref-item">
+      <span class="ref-label">Travelers</span>
+      <span class="ref-value">Preetham, Prashanthi, Adi</span>
+    </div>
+    <div class="ref-item">
+      <span class="ref-label">Weather Fri</span>
+      <span class="ref-value">68°F, sunny</span>
+    </div>
+    <div class="ref-item">
+      <span class="ref-label">Weather Sat</span>
+      <span class="ref-value">78°F, 75% rain</span>
+    </div>
+    <div class="ref-item">
+      <span class="ref-label">Weather Sun</span>
+      <span class="ref-value">83°F, clearing</span>
+    </div>
+    <div class="ref-item">
+      <span class="ref-label">Emergency</span>
+      <span class="ref-value">911</span>
+    </div>
+    <div class="ref-item">
+      <span class="ref-label">Art in Bloom</span>
+      <span class="ref-value"><a href="https://ncartmuseum.org" target="_blank">ncartmuseum.org</a></span>
+    </div>
+  </div>
+
+  <p class="install-note">
+    <strong>📲 Add to Home Screen</strong> &mdash; open in Safari (iPhone) or Chrome (Android), tap Share &rarr; "Add to Home Screen" to install as its own app. Works offline after first load.
+  </p>
+
+</div>
+
+<script>
+// Countdown to Friday March 20, 2026 8:30 AM ET (departure time)
+const TARGET = new Date('2026-03-20T08:30:00-04:00').getTime();
+
+function tick() {
+  const now = Date.now();
+  const diff = TARGET - now;
+  if (diff <= 0) {
+    document.getElementById('countdown').style.display = 'none';
+    document.getElementById('tagline').textContent = 'Road trip in progress!';
+    return;
+  }
+  const d = Math.floor(diff / 86400000);
+  const h = Math.floor((diff % 86400000) / 3600000);
+  const m = Math.floor((diff % 3600000) / 60000);
+  document.getElementById('cd-d').textContent = String(d).padStart(2, '0');
+  document.getElementById('cd-h').textContent = String(h).padStart(2, '0');
+  document.getElementById('cd-m').textContent = String(m).padStart(2, '0');
+}
+tick();
+setInterval(tick, 10000);
+
+function shareApp() {
+  const data = { title: 'Raleigh Family Trip Guide', text: 'Our Raleigh trip guide — March 20-22, 2026', url: window.location.href };
+  if (navigator.share) { navigator.share(data); }
+  else { navigator.clipboard.writeText(window.location.href).then(() => alert('Link copied!')); }
+}
+
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('./sw.js');
+}
+</script>
+</body>
+</html>

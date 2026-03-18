@@ -1,0 +1,723 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#e94560">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<title>Raleigh Trip — Full Itinerary</title>
+<style>
+:root {
+  --bg: #1a1a2e;
+  --card: #16213e;
+  --card-border: #ffffff0d;
+  --accent: #e94560;
+  --accent-soft: #e9456022;
+  --green: #4ecca3;
+  --amber: #f0a500;
+  --text: #eee;
+  --muted: #8892b0;
+  --radius: 14px;
+  --max-w: 520px;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100dvh;
+  padding-bottom: env(safe-area-inset-bottom);
+}
+.top-bar {
+  position: sticky; top: 0; z-index: 100;
+  background: var(--bg);
+  border-bottom: 1px solid var(--card-border);
+  padding: 12px 16px 0;
+}
+.top-bar a { color: var(--muted); text-decoration: none; font-size: 0.85rem; }
+.top-bar h1 { font-size: 1.2rem; font-weight: 700; margin: 6px 0 0; letter-spacing: -0.01em; }
+.top-bar .sub { font-size: 0.78rem; color: var(--muted); margin-bottom: 10px; }
+
+/* Tabs */
+.tabs {
+  display: flex;
+  gap: 0;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  padding-bottom: 10px;
+}
+.tabs::-webkit-scrollbar { display: none; }
+.tab {
+  flex-shrink: 0;
+  padding: 6px 14px;
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: var(--muted);
+  background: none;
+  border: none;
+  border-radius: 999px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s;
+}
+.tab.active { background: var(--accent); color: #fff; }
+.tab:not(.active):hover { color: var(--text); }
+
+/* Content */
+.content { max-width: var(--max-w); margin: 0 auto; padding: 16px; }
+.section { display: none; }
+.section.active { display: block; }
+
+/* Timeline items */
+.tl { margin-bottom: 24px; }
+.tl-item {
+  display: grid;
+  grid-template-columns: 62px 1fr;
+  gap: 12px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--card-border);
+}
+.tl-time {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--muted);
+  padding-top: 2px;
+}
+.tl-body {}
+.tl-title {
+  font-size: 0.95rem;
+  font-weight: 600;
+  margin-bottom: 4px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.tl-desc {
+  font-size: 0.82rem;
+  color: var(--muted);
+  line-height: 1.55;
+}
+.tl-desc a { color: var(--accent); text-decoration: none; }
+
+/* Tags */
+.tag {
+  display: inline-block;
+  font-size: 0.65rem;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 999px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  vertical-align: middle;
+}
+.tag-must { background: var(--accent); color: #fff; }
+.tag-should { background: var(--amber); color: #1a1a2e; }
+.tag-nice { background: var(--card); color: var(--muted); border: 1px solid var(--card-border); }
+.tag-veg { background: #4ecca322; color: var(--green); }
+
+/* Day header */
+.day-header {
+  padding: 20px 0 8px;
+}
+.day-header h2 {
+  font-size: 1.3rem;
+  font-weight: 700;
+  margin-bottom: 2px;
+}
+.day-header .day-sub {
+  font-size: 0.82rem;
+  color: var(--muted);
+}
+
+/* Notes card */
+.note-card {
+  background: var(--card);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius);
+  padding: 16px;
+  margin: 12px 0;
+  font-size: 0.82rem;
+  line-height: 1.6;
+  color: var(--muted);
+}
+.note-card strong { color: var(--text); }
+.note-card ul { padding-left: 18px; margin-top: 6px; }
+.note-card li { margin-bottom: 4px; }
+
+/* Places and Food reference cards */
+.ref-card {
+  background: var(--card);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius);
+  padding: 16px;
+  margin-bottom: 12px;
+}
+.ref-card h3 {
+  font-size: 0.95rem;
+  font-weight: 600;
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.ref-card p {
+  font-size: 0.82rem;
+  color: var(--muted);
+  line-height: 1.5;
+  margin-bottom: 4px;
+}
+.ref-card a { color: var(--accent); text-decoration: none; font-size: 0.82rem; }
+.ref-card .ref-tags { margin-top: 6px; display: flex; gap: 6px; flex-wrap: wrap; }
+
+/* Share */
+.share-float {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 50;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: 50%;
+  width: 48px;
+  height: 48px;
+  font-size: 1.2rem;
+  cursor: pointer;
+  box-shadow: 0 4px 20px #e9456066;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Info section */
+.info-grid {
+  display: grid;
+  gap: 12px;
+}
+.info-item {
+  background: var(--card);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+}
+.info-item .info-label {
+  font-size: 0.72rem;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 4px;
+}
+.info-item .info-value {
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+.info-item a { color: var(--accent); text-decoration: none; }
+
+/* Checklist */
+.checklist label {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--card-border);
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+.checklist input[type="checkbox"] {
+  margin-top: 3px;
+  accent-color: var(--accent);
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+}
+.checklist .checked { text-decoration: line-through; color: var(--muted); }
+</style>
+</head>
+<body>
+
+<div class="top-bar">
+  <a href="index.html">&larr; Home</a>
+  <h1>Raleigh Family Trip</h1>
+  <p class="sub">March 20 &ndash; 22, 2026 &middot; 3 Travelers</p>
+  <div class="tabs" id="tabs">
+    <button class="tab active" data-tab="prep">Prep</button>
+    <button class="tab" data-tab="day1">Fri<br><span style="font-size:0.65rem">Mar 20</span></button>
+    <button class="tab" data-tab="day2">Sat<br><span style="font-size:0.65rem">Mar 21</span></button>
+    <button class="tab" data-tab="day3">Sun<br><span style="font-size:0.65rem">Mar 22</span></button>
+    <button class="tab" data-tab="places">🗺️ Places</button>
+    <button class="tab" data-tab="food">🍽️ Food</button>
+    <button class="tab" data-tab="info">ℹ️ Info</button>
+  </div>
+</div>
+
+<div class="content">
+
+<!-- ========== PREP ========== -->
+<div class="section active" id="sec-prep">
+  <div class="day-header">
+    <h2>Before You Go</h2>
+    <p class="day-sub">Pre-trip checklist for a smooth weekend</p>
+  </div>
+
+  <div class="note-card">
+    <strong>Book this week</strong>
+    <ul>
+      <li><strong>Art in Bloom tickets</strong> &mdash; timed entry, popular weekend. Book at <a href="https://ncartmuseum.org" target="_blank">ncartmuseum.org</a></li>
+      <li><strong>Fiction Kitchen</strong> Saturday dinner reservation &mdash; <a href="https://www.opentable.com" target="_blank">OpenTable</a> or call (919) 999-0330</li>
+    </ul>
+  </div>
+
+  <div class="note-card">
+    <strong>Weather intel</strong>
+    <ul>
+      <li>Friday: 68°F, sunny. Perfect for walking downtown.</li>
+      <li>Saturday: 78°F, 75% rain chance. Plan indoor activities (Art in Bloom, museums) for afternoon.</li>
+      <li>Sunday: 83°F, clearing. Nice for outdoor morning before driving home.</li>
+    </ul>
+  </div>
+
+  <div class="note-card">
+    <strong>Packing notes</strong>
+    <ul>
+      <li>Rain jacket or umbrella (Saturday rain)</li>
+      <li>Comfortable walking shoes &mdash; downtown Raleigh is very walkable</li>
+      <li>Light layers &mdash; 68° to 83° range across the weekend</li>
+      <li>Camera gear if bringing the Canon</li>
+      <li>Snacks and water for the 4.5 hr drive</li>
+    </ul>
+  </div>
+
+  <div class="note-card">
+    <strong>Drive plan</strong>
+    <ul>
+      <li><strong>Route:</strong> Brambleton &rarr; I-66 W &rarr; I-81 S &rarr; I-85 S &rarr; Raleigh (~4.5 hrs)</li>
+      <li><strong>Midpoint stop:</strong> South Hill or Henderson, VA (~2 hrs in)</li>
+      <li><strong>Depart:</strong> 8:30 AM Friday &rarr; arrive ~1:00 PM</li>
+      <li><strong>Tolls:</strong> Minimal. ~$5 on I-85</li>
+      <li><strong>Gas:</strong> Fill up before departure. ~$55 each way.</li>
+    </ul>
+  </div>
+
+  <h3 style="margin:20px 0 10px; font-size:0.95rem;">Checklist</h3>
+  <div class="checklist" id="checklist">
+    <label><input type="checkbox"><span>Art in Bloom tickets booked</span></label>
+    <label><input type="checkbox"><span>Fiction Kitchen reservation (Sat 7 PM)</span></label>
+    <label><input type="checkbox"><span>Gas tank full</span></label>
+    <label><input type="checkbox"><span>Rain gear packed</span></label>
+    <label><input type="checkbox"><span>Snacks and water for drive</span></label>
+    <label><input type="checkbox"><span>Camera + lenses charged</span></label>
+    <label><input type="checkbox"><span>Phone chargers and car charger</span></label>
+    <label><input type="checkbox"><span>Confirm host address and arrival time</span></label>
+  </div>
+</div>
+
+<!-- ========== DAY 1: FRIDAY ========== -->
+<div class="section" id="sec-day1">
+  <div class="day-header">
+    <h2>Day 1 &middot; Friday, March 20</h2>
+    <p class="day-sub">Drive + Settle In &middot; 68°F Sunny</p>
+  </div>
+
+  <div class="tl">
+    <div class="tl-item">
+      <div class="tl-time">8:30 AM</div>
+      <div class="tl-body">
+        <div class="tl-title">🚗 Depart Brambleton</div>
+        <div class="tl-desc">I-66 W &rarr; I-81 S &rarr; I-85 S. ~4.5 hours. Rest stop at South Hill, VA (midpoint). Fill gas before leaving.</div>
+      </div>
+    </div>
+
+    <div class="tl-item">
+      <div class="tl-time">10:30 AM</div>
+      <div class="tl-body">
+        <div class="tl-title">⛽ Midpoint stop &mdash; South Hill, VA</div>
+        <div class="tl-desc">Stretch, restroom, snacks. ~15 min break. Sheetz or Wawa off I-85.</div>
+      </div>
+    </div>
+
+    <div class="tl-item">
+      <div class="tl-time">1:00 PM</div>
+      <div class="tl-body">
+        <div class="tl-title"><span class="tag tag-must">Must</span> Arrive Raleigh</div>
+        <div class="tl-desc">Head to your host's place, drop bags, freshen up.</div>
+      </div>
+    </div>
+
+    <div class="tl-item">
+      <div class="tl-time">2:00 PM</div>
+      <div class="tl-body">
+        <div class="tl-title"><span class="tag tag-should">Should</span> 🚶 Downtown Raleigh stroll</div>
+        <div class="tl-desc">Walk <strong>Fayetteville Street</strong> &mdash; the main downtown pedestrian corridor. State Capitol grounds, Moore Square, browse shops on Hargett Street. Easy, low key first afternoon. The <strong>Sip n' Stroll</strong> social district lets you walk downtown with a drink from any participating bar.<br><a href="https://maps.google.com/?q=Fayetteville+Street+Raleigh+NC" target="_blank">📍 Fayetteville St</a></div>
+      </div>
+    </div>
+
+    <div class="tl-item">
+      <div class="tl-time">3:30 PM</div>
+      <div class="tl-body">
+        <div class="tl-title"><span class="tag tag-nice">Nice</span> 🛍️ Transfer Co. Food Hall</div>
+        <div class="tl-desc">Casual browse. Multiple vendors, good coffee, local vibe. Nice spot for an afternoon snack or drink.<br><a href="https://maps.google.com/?q=Transfer+Co+Food+Hall+Raleigh" target="_blank">📍 Transfer Co.</a></div>
+      </div>
+    </div>
+
+    <div class="tl-item">
+      <div class="tl-time">6:30 PM</div>
+      <div class="tl-body">
+        <div class="tl-title"><span class="tag tag-must">Must</span> 🍽️ Dinner &mdash; Bida Manda</div>
+        <div class="tl-desc">Laotian restaurant near Moore Square. Excellent vegetarian options: basil stir fry with tofu, papaya salad, spring rolls. Great cocktails. Adi will enjoy the flavors.<br><strong>222 S. Blount St.</strong><br><a href="https://maps.google.com/?q=Bida+Manda+Raleigh+NC" target="_blank">📍 Directions</a></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="note-card">
+    <strong>Day 1 notes</strong>
+    <ul>
+      <li>Easy pace. Long drive, so keep the afternoon light.</li>
+      <li>Downtown is very walkable from any parking garage on Fayetteville or Wilmington St.</li>
+      <li>If Bida Manda has a wait, backup: <strong>Sosta Cafe</strong> (130 E. Davie St) for sandwiches, or Transfer Co. Food Hall vendors.</li>
+      <li>Budget estimate: Gas ~$55, dinner ~$80, parking ~$10. Total ~$145.</li>
+    </ul>
+  </div>
+</div>
+
+<!-- ========== DAY 2: SATURDAY ========== -->
+<div class="section" id="sec-day2">
+  <div class="day-header">
+    <h2>Day 2 &middot; Saturday, March 21</h2>
+    <p class="day-sub">Art in Bloom + Downtown &middot; 78°F &middot; 75% Rain</p>
+  </div>
+
+  <div class="note-card" style="border-left: 3px solid var(--amber);">
+    <strong>⚠️ Rain likely today.</strong> Indoor activities (museums, Art in Bloom) are scheduled for the afternoon deliberately. Morning is your best window for outdoor time.
+  </div>
+
+  <div class="tl">
+    <div class="tl-item">
+      <div class="tl-time">9:00 AM</div>
+      <div class="tl-body">
+        <div class="tl-title"><span class="tag tag-should">Should</span> ☕ Brunch &mdash; Sosta Cafe</div>
+        <div class="tl-desc">Downtown, covered patio. Vegetarian sandwiches, good coffee, pastries. Relaxed and walkable.<br><strong>130 E. Davie St.</strong><br><a href="https://maps.google.com/?q=Sosta+Cafe+Raleigh+NC" target="_blank">📍 Directions</a></div>
+      </div>
+    </div>
+
+    <div class="tl-item">
+      <div class="tl-time">10:30 AM</div>
+      <div class="tl-body">
+        <div class="tl-title"><span class="tag tag-must">Must</span> 🦕 NC Museum of Natural Sciences</div>
+        <div class="tl-desc"><strong>Free admission.</strong> Four floors of exhibits. Dinosaur hall, live animal exhibits, the new <strong>Staying Alive</strong> interactive exhibition (opened March 14). Adi will love this. Plan 1.5&ndash;2 hours.<br><strong>11 W. Jones St.</strong><br><a href="https://maps.google.com/?q=NC+Museum+of+Natural+Sciences+Raleigh" target="_blank">📍 Directions</a></div>
+      </div>
+    </div>
+
+    <div class="tl-item">
+      <div class="tl-time">12:30 PM</div>
+      <div class="tl-body">
+        <div class="tl-title"><span class="tag tag-nice">Nice</span> 🍜 Quick lunch &mdash; Neomonde</div>
+        <div class="tl-desc">Mediterranean/Lebanese. Strong vegetarian options: falafel pitas, veggie flatbread, hummus platters. Quick and casual.<br><a href="https://maps.google.com/?q=Neomonde+Raleigh+NC" target="_blank">📍 Directions</a></div>
+      </div>
+    </div>
+
+    <div class="tl-item">
+      <div class="tl-time">2:00 PM</div>
+      <div class="tl-body">
+        <div class="tl-title"><span class="tag tag-must">Must</span> 🌸 Art in Bloom &mdash; NC Museum of Art</div>
+        <div class="tl-desc">Annual five-day event pairing stunning artworks with creative floral arrangements. This year's theme: <strong>"Written in the Stars."</strong> Massive floral installations throughout the galleries. Tickets ~$25/person.<br>Perfect rainy afternoon activity. The 164-acre museum park and sculpture garden are worth a walk if rain holds off.<br><strong>2110 Blue Ridge Rd.</strong> (~15 min drive from downtown)<br><a href="https://maps.google.com/?q=NC+Museum+of+Art+Raleigh" target="_blank">📍 Directions</a></div>
+      </div>
+    </div>
+
+    <div class="tl-item">
+      <div class="tl-time">4:30 PM</div>
+      <div class="tl-body">
+        <div class="tl-title"><span class="tag tag-nice">Nice</span> 🌳 Museum Park walk</div>
+        <div class="tl-desc">If rain holds off, walk the outdoor sculpture trail. Beautiful in spring light. Good photo opportunities with the Canon.</div>
+      </div>
+    </div>
+
+    <div class="tl-item">
+      <div class="tl-time">5:30 PM</div>
+      <div class="tl-body">
+        <div class="tl-title">🏠 Rest break</div>
+        <div class="tl-desc">Back to host's place. Recharge before dinner.</div>
+      </div>
+    </div>
+
+    <div class="tl-item">
+      <div class="tl-time">7:00 PM</div>
+      <div class="tl-body">
+        <div class="tl-title"><span class="tag tag-must">Must</span> 🍽️ Dinner &mdash; Fiction Kitchen</div>
+        <div class="tl-desc"><strong>100% vegetarian restaurant.</strong> Creative comfort food: curry bowls with coconut curry and basmati, apple and beet chaat, mac + cheese, "chicken" and waffles. Strong cocktail program &mdash; try the Eastern NC Bloody Mary or Cherish the Beet. Adi friendly.<br><span class="tag tag-veg">🌿 All Veg</span><br><strong>2409 Crabtree Blvd., Ste. 100</strong><br><a href="https://maps.google.com/?q=Fiction+Kitchen+Raleigh+NC" target="_blank">📍 Directions</a> &middot; <a href="https://thefictionkitchen.com" target="_blank">Menu</a></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="note-card">
+    <strong>Day 2 notes</strong>
+    <ul>
+      <li>This is the big day. Two anchors: Museum of Natural Sciences (free, morning) and Art in Bloom (ticketed, afternoon).</li>
+      <li>Art in Bloom is 15 min drive from downtown. Use your car.</li>
+      <li>Fiction Kitchen gets busy Saturday night. Reservation strongly recommended.</li>
+      <li>Budget estimate: Art in Bloom ~$75, meals ~$100, parking ~$15, misc ~$25. Total ~$215.</li>
+    </ul>
+  </div>
+</div>
+
+<!-- ========== DAY 3: SUNDAY ========== -->
+<div class="section" id="sec-day3">
+  <div class="day-header">
+    <h2>Day 3 &middot; Sunday, March 22</h2>
+    <p class="day-sub">Brunch + Drive Home &middot; 83°F Clearing</p>
+  </div>
+
+  <div class="tl">
+    <div class="tl-item">
+      <div class="tl-time">9:00 AM</div>
+      <div class="tl-body">
+        <div class="tl-title"><span class="tag tag-must">Must</span> 🍳 Brunch &mdash; Irregardless Cafe</div>
+        <div class="tl-desc">Raleigh institution since 1975. Named one of the top 50 vegetarian restaurants in the US. Fresh seasonal dishes, warm atmosphere. Great way to close the trip.<br><span class="tag tag-veg">🌿 Strong Veg Options</span><br><strong>901 W. Morgan St.</strong><br><a href="https://maps.google.com/?q=Irregardless+Cafe+Raleigh+NC" target="_blank">📍 Directions</a></div>
+      </div>
+    </div>
+
+    <div class="tl-item">
+      <div class="tl-time">10:30 AM</div>
+      <div class="tl-body">
+        <div class="tl-title"><span class="tag tag-should">Should</span> 🌿 JC Raulston Arboretum <em>or</em> Pullen Park</div>
+        <div class="tl-desc"><strong>Option A: JC Raulston Arboretum</strong> &mdash; Free, on NC State campus. 8 acres, beautiful in spring. Quiet morning walk. (~30 min)<br><strong>Option B: Pullen Park</strong> &mdash; If Adi wants to move. Oldest public park in NC, playground, pedal boats (seasonal), carousel. (~30-45 min)<br><a href="https://maps.google.com/?q=JC+Raulston+Arboretum+Raleigh" target="_blank">📍 Arboretum</a> &middot; <a href="https://maps.google.com/?q=Pullen+Park+Raleigh+NC" target="_blank">📍 Pullen Park</a></div>
+      </div>
+    </div>
+
+    <div class="tl-item">
+      <div class="tl-time">11:30 AM</div>
+      <div class="tl-body">
+        <div class="tl-title">🏠 Pack up + say goodbye</div>
+        <div class="tl-desc">Head back to host's place, pack the car.</div>
+      </div>
+    </div>
+
+    <div class="tl-item">
+      <div class="tl-time">12:30 PM</div>
+      <div class="tl-body">
+        <div class="tl-title"><span class="tag tag-must">Must</span> 🚗 Drive home</div>
+        <div class="tl-desc">4.5 hours. I-85 N &rarr; I-81 N &rarr; I-66 E &rarr; Brambleton. Arrive ~5:00 PM. Pack snacks and water. One rest stop at South Hill, VA.</div>
+      </div>
+    </div>
+
+    <div class="tl-item">
+      <div class="tl-time">~5:00 PM</div>
+      <div class="tl-body">
+        <div class="tl-title">🏡 Home</div>
+        <div class="tl-desc">Back in Brambleton. Unpack, rest, and enjoy the Sunday evening.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="note-card">
+    <strong>Day 3 notes</strong>
+    <ul>
+      <li>Keep the morning light. One brunch, one quick outdoor stop, then drive.</li>
+      <li>Sunday traffic on I-85 N is generally light. No major bottlenecks expected.</li>
+      <li>Budget estimate: Brunch ~$60, gas ~$55. Total ~$115.</li>
+    </ul>
+  </div>
+</div>
+
+<!-- ========== PLACES ========== -->
+<div class="section" id="sec-places">
+  <div class="day-header">
+    <h2>🗺️ Places</h2>
+    <p class="day-sub">All venues at a glance</p>
+  </div>
+
+  <div class="ref-card">
+    <h3>🏛️ NC Museum of Natural Sciences</h3>
+    <p>11 W. Jones St. &middot; Free admission &middot; 4 floors</p>
+    <p>Mon-Sat 9AM-5PM, Sun 12-5PM</p>
+    <a href="https://maps.google.com/?q=NC+Museum+of+Natural+Sciences+Raleigh" target="_blank">📍 Map</a> &middot; <a href="https://naturalsciences.org" target="_blank">Website</a>
+  </div>
+
+  <div class="ref-card">
+    <h3>🌸 NC Museum of Art (Art in Bloom)</h3>
+    <p>2110 Blue Ridge Rd. &middot; ~$25/ticket &middot; 15 min from downtown</p>
+    <p>Art in Bloom: March 18-22, times vary</p>
+    <a href="https://maps.google.com/?q=NC+Museum+of+Art+Raleigh" target="_blank">📍 Map</a> &middot; <a href="https://ncartmuseum.org" target="_blank">Website</a>
+  </div>
+
+  <div class="ref-card">
+    <h3>🚶 Fayetteville Street + Moore Square</h3>
+    <p>Main downtown pedestrian corridor. State Capitol, shops, restaurants. Sip n' Stroll social district.</p>
+    <a href="https://maps.google.com/?q=Fayetteville+Street+Raleigh+NC" target="_blank">📍 Map</a>
+  </div>
+
+  <div class="ref-card">
+    <h3>🏪 Transfer Co. Food Hall</h3>
+    <p>500 E. Davie St. &middot; Multiple vendors, coffee, casual eats</p>
+    <a href="https://maps.google.com/?q=Transfer+Co+Food+Hall+Raleigh" target="_blank">📍 Map</a>
+  </div>
+
+  <div class="ref-card">
+    <h3>🌿 JC Raulston Arboretum</h3>
+    <p>4415 Beryl Rd. &middot; Free &middot; NC State campus &middot; 8 acres</p>
+    <p>Daily 8AM-dusk</p>
+    <a href="https://maps.google.com/?q=JC+Raulston+Arboretum+Raleigh" target="_blank">📍 Map</a>
+  </div>
+
+  <div class="ref-card">
+    <h3>🎠 Pullen Park</h3>
+    <p>520 Ashe Ave. &middot; Free entry &middot; Playground, carousel, pedal boats</p>
+    <a href="https://maps.google.com/?q=Pullen+Park+Raleigh+NC" target="_blank">📍 Map</a>
+  </div>
+</div>
+
+<!-- ========== FOOD ========== -->
+<div class="section" id="sec-food">
+  <div class="day-header">
+    <h2>🍽️ Food Guide</h2>
+    <p class="day-sub">All restaurant recommendations &middot; 🌿 = strong vegetarian options</p>
+  </div>
+
+  <div class="ref-card">
+    <h3>🍜 Bida Manda <span class="tag tag-veg">🌿 Veg Friendly</span></h3>
+    <p><strong>Day 1 Dinner</strong> &middot; Laotian &middot; 222 S. Blount St.</p>
+    <p>Basil stir fry with tofu, papaya salad, spring rolls, cocktails. Near Moore Square.</p>
+    <a href="https://maps.google.com/?q=Bida+Manda+Raleigh+NC" target="_blank">📍 Map</a>
+  </div>
+
+  <div class="ref-card">
+    <h3>☕ Sosta Cafe <span class="tag tag-veg">🌿 Veg Friendly</span></h3>
+    <p><strong>Day 2 Brunch</strong> &middot; Cafe &middot; 130 E. Davie St.</p>
+    <p>Vegetarian sandwiches, vegan sides, good coffee. Covered patio. Downtown.</p>
+    <a href="https://maps.google.com/?q=Sosta+Cafe+Raleigh+NC" target="_blank">📍 Map</a>
+  </div>
+
+  <div class="ref-card">
+    <h3>🧆 Neomonde <span class="tag tag-veg">🌿 Veg Friendly</span></h3>
+    <p><strong>Day 2 Quick Lunch</strong> &middot; Mediterranean/Lebanese</p>
+    <p>Falafel pitas, veggie flatbread, hummus. Fast and casual.</p>
+    <a href="https://maps.google.com/?q=Neomonde+Raleigh+NC" target="_blank">📍 Map</a>
+  </div>
+
+  <div class="ref-card">
+    <h3>🌿 Fiction Kitchen <span class="tag tag-veg">🌿 100% Veg</span></h3>
+    <p><strong>Day 2 Dinner ★</strong> &middot; Vegetarian/Vegan &middot; 2409 Crabtree Blvd., Ste. 100</p>
+    <p>Trip highlight. Curry bowl, apple &amp; beet chaat, mac + cheese, "chicken" &amp; waffles. Eastern NC Bloody Mary, Cherish the Beet cocktail. Reserve ahead.</p>
+    <a href="https://maps.google.com/?q=Fiction+Kitchen+Raleigh+NC" target="_blank">📍 Map</a> &middot; <a href="https://thefictionkitchen.com" target="_blank">Menu</a>
+  </div>
+
+  <div class="ref-card">
+    <h3>🍳 Irregardless Cafe <span class="tag tag-veg">🌿 Veg Friendly</span></h3>
+    <p><strong>Day 3 Brunch</strong> &middot; American/Seasonal &middot; 901 W. Morgan St.</p>
+    <p>Since 1975. Top 50 vegetarian restaurant (OpenTable). Fresh seasonal dishes, nightly live music. Community vibe.</p>
+    <a href="https://maps.google.com/?q=Irregardless+Cafe+Raleigh+NC" target="_blank">📍 Map</a>
+  </div>
+
+  <div class="ref-card">
+    <h3>🏪 Transfer Co. Food Hall</h3>
+    <p><strong>Backup / Snack</strong> &middot; 500 E. Davie St.</p>
+    <p>Multiple vendors. Good for a quick bite if plans shift.</p>
+    <a href="https://maps.google.com/?q=Transfer+Co+Food+Hall+Raleigh" target="_blank">📍 Map</a>
+  </div>
+
+  <div class="note-card">
+    <strong>Other options if you get adventurous</strong>
+    <ul>
+      <li><strong>Tamasha</strong> &mdash; Progressive Indian. Lots of veg/vegan. Downtown.</li>
+      <li><strong>Ajja</strong> &mdash; James Beard recognized. Mediterranean. King trumpet mushrooms, veggie spreads.</li>
+      <li><strong>Element Gastropub</strong> &mdash; 100% plant based pub food. Downtown.</li>
+      <li><strong>Brewery Bhavana</strong> &mdash; Brewery + dim sum. Some items vegan on request. 218 S. Blount St.</li>
+    </ul>
+  </div>
+</div>
+
+<!-- ========== INFO ========== -->
+<div class="section" id="sec-info">
+  <div class="day-header">
+    <h2>ℹ️ Trip Info</h2>
+    <p class="day-sub">Quick reference</p>
+  </div>
+
+  <div class="info-grid">
+    <div class="info-item">
+      <div class="info-label">Travelers</div>
+      <div class="info-value">Preetham, Prashanthi, Adi (3)</div>
+    </div>
+    <div class="info-item">
+      <div class="info-label">Dates</div>
+      <div class="info-value">Friday March 20 &ndash; Sunday March 22, 2026</div>
+    </div>
+    <div class="info-item">
+      <div class="info-label">Accommodation</div>
+      <div class="info-value">Staying with friends/family</div>
+    </div>
+    <div class="info-item">
+      <div class="info-label">Drive</div>
+      <div class="info-value">Brambleton, VA &rarr; Raleigh, NC<br>~4.5 hrs via I-85 S &middot; ~270 miles</div>
+    </div>
+    <div class="info-item">
+      <div class="info-label">Car</div>
+      <div class="info-value">2023 BMW X5</div>
+    </div>
+    <div class="info-item">
+      <div class="info-label">Weather</div>
+      <div class="info-value">Fri 68°F ☀️ &middot; Sat 78°F 🌧️ &middot; Sun 83°F ⛅</div>
+    </div>
+    <div class="info-item">
+      <div class="info-label">Emergency</div>
+      <div class="info-value">911</div>
+    </div>
+    <div class="info-item">
+      <div class="info-label">Nearest hospital</div>
+      <div class="info-value">WakeMed Raleigh Campus<br>3000 New Bern Ave. &middot; <a href="tel:9193501000">(919) 350-1000</a></div>
+    </div>
+    <div class="info-item">
+      <div class="info-label">Downtown parking</div>
+      <div class="info-value">Wilmington St Garage or Fayetteville St Garage. ~$3-5/hr. Free on Sundays.</div>
+    </div>
+    <div class="info-item">
+      <div class="info-label">Budget estimate</div>
+      <div class="info-value">Gas $110 + Art in Bloom $75 + Meals $240 + Misc $25 = <strong>~$450 total</strong></div>
+    </div>
+  </div>
+</div>
+
+</div><!-- .content -->
+
+<button class="share-float" onclick="shareApp()">📤</button>
+
+<script>
+// Tab switching
+document.querySelectorAll('.tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+    tab.classList.add('active');
+    document.getElementById('sec-' + tab.dataset.tab).classList.add('active');
+    window.scrollTo(0, 0);
+  });
+});
+
+// Checklist persistence
+document.querySelectorAll('#checklist input').forEach((cb, i) => {
+  const key = 'ral-check-' + i;
+  cb.checked = localStorage.getItem(key) === '1';
+  if (cb.checked) cb.parentElement.querySelector('span').classList.add('checked');
+  cb.addEventListener('change', () => {
+    localStorage.setItem(key, cb.checked ? '1' : '0');
+    cb.parentElement.querySelector('span').classList.toggle('checked', cb.checked);
+  });
+});
+
+// Share
+function shareApp() {
+  const data = { title: 'Raleigh Family Trip Guide', text: 'Our Raleigh trip itinerary', url: window.location.href };
+  if (navigator.share) { navigator.share(data); }
+  else { navigator.clipboard.writeText(window.location.href).then(() => alert('Link copied!')); }
+}
+
+// Register SW
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('./sw.js');
+}
+</script>
+</body>
+</html>
